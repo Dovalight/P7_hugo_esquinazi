@@ -46,20 +46,27 @@ exports.modifyPost = (req, res, next)=>{
 };
 
 exports.deletePost = (req, res, next)=>{
+    console.log(req.params);
     Post.findOne({_id: req.params.id})
     .then(post => {
+        console.log(post);
+        console.log(post.userId);
+        console.log(req.auth.userId);
         if (post.userId != req.auth.userId){
             res.status(401).json({message : 'non-autorisé'});
         } else {
-            const filename = post.imageUrl.split('/images')[1];
-            fs.unlink(`images/${filename}`, () =>{
-                Post.deleteOne({_id: req.params.id})
-                .then(()=> res.status(200).json({message: 'Post supprimé'}))
-                .catch(error => res.status(401).json({error}));
-            })
+            Post.deleteOne({_id: req.params.id})
+            .then(()=> {
+                if(post.imageUrl ){const filename = post.imageUrl.split('/images')[1];
+                fs.unlink(`images/${filename}`, () =>{
+                })}
+                res.status(200).json({message: 'Post supprimé'})})
+            .catch(error => res.status(401).json({error}));        
         }
     })
-    .catch(error => res.status(500).json({error}));
+    .catch(error =>{
+         console.log(error)
+   res.status(500).json({error}) } );
 };
 
 exports.getOnePost = (req, res, next)=>{
